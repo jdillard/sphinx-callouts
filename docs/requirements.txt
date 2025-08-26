@@ -1,0 +1,6 @@
+furo
+esbonio
+sphinx-contributors
+sphinx
+../../sphinx-callouts
+sphinxext-opengraph
