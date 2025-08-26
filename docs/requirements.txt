@@ -2,5 +2,5 @@ furo
 esbonio
 sphinx-contributors
 sphinx
-../../sphinx-callouts
+sphinx-callouts
 sphinxext-opengraph
