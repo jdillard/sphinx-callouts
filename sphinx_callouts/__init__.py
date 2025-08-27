@@ -64,8 +64,95 @@ class LiteralIncludeVisitor(nodes.NodeVisitor):
                             'number': i,
                             'symbol': chr(int(f"0x{BASE_NUM + i}", base=16))
                         })
-                        # Remove marker from the line
-                        clean_line = clean_line.replace(marker, "")
+                        # Remove the comment and marker from the line
+                        # Support all AsciiDoc comment patterns with various spacing
+                        # Put XML patterns FIRST to prevent fallback substring matching issues
+                        patterns = [
+                            # XML/HTML/SGML style comments (using marker format)
+                            f"  <!-- {marker} -->", # XML style with spaces: <!-- <1> -->
+                            f" <!-- {marker} -->",  # XML style with space and spaces: <!-- <1> -->
+                            f"<!-- {marker} -->",   # XML style with spaces: <!-- <1> -->
+                            f"  <!--{marker}-->",   # XML style: <!--<1>-->
+                            f" <!--{marker}-->",    # XML style with space: <!--<1>-->
+                            f"<!--{marker}-->",     # XML style: <!--<1>-->
+                            f"  <!-- {marker}-->",  # XML style with leading space: <!-- <1>-->
+                            f" <!-- {marker}-->",   # XML style with space and leading space: <!-- <1>-->
+                            f"<!-- {marker}-->",    # XML style with leading space: <!-- <1>-->
+                            f"  <!--{marker} -->",  # XML style with trailing space: <!--<1> -->
+                            f" <!--{marker} -->",   # XML style with space and trailing space: <!--<1> -->
+                            f"<!--{marker} -->",    # XML style with trailing space: <!--<1> -->
+
+                            # XML/HTML/SGML style comments (using direct number format)
+                            f"  <!-- {i} -->",     # XML style with spaces: <!-- 7 -->
+                            f" <!-- {i} -->",      # XML style with space and spaces: <!-- 7 -->
+                            f"<!-- {i} -->",       # XML style with spaces: <!-- 7 -->
+                            f"  <!--{i}-->",       # XML style: <!--7-->
+                            f" <!--{i}-->",        # XML style with space: <!--7-->
+                            f"<!--{i}-->",         # XML style: <!--7-->
+                            f"  <!-- {i}-->",      # XML style with leading space: <!-- 7-->
+                            f" <!-- {i}-->",       # XML style with space and leading space: <!-- 7-->
+                            f"<!-- {i}-->",        # XML style with leading space: <!-- 7-->
+                            f"  <!--{i} -->",      # XML style with trailing space: <!--7 -->
+                            f" <!--{i} -->",       # XML style with space and trailing space: <!--7 -->
+                            f"<!--{i} -->",        # XML style with trailing space: <!--7 -->
+
+                            # Python/Ruby/Perl/Shell style comments
+                            f"  # {marker}",   # with double space
+                            f" # {marker}",    # with single space
+                            f"# {marker}",     # no space before #
+                            f"#{marker}",      # no space after #
+
+                            # C-style comments (C++, Java, JavaScript, etc.)
+                            f"  // {marker}",  # with double space
+                            f" // {marker}",   # with single space
+                            f"// {marker}",    # no space before //
+                            f"//{marker}",     # no space after //
+
+                            # Clojure style comments
+                            f"  ;; {marker}",  # with double space
+                            f" ;; {marker}",   # with single space
+                            f";; {marker}",    # no space before ;;
+                            f";;{marker}",     # no space after ;;
+
+                            # Erlang/PostScript style comments
+                            f"  % {marker}",   # with double space
+                            f" % {marker}",    # with single space
+                            f"% {marker}",     # no space before %
+                            f"%{marker}",      # no space after %
+
+                            # SQL style comments
+                            f"  -- {marker}",  # with double space
+                            f" -- {marker}",   # with single space
+                            f"-- {marker}",    # no space before --
+                            f"--{marker}",     # no space after --
+
+                            # Fortran/MATLAB style comments
+                            f"  ! {marker}",   # with double space
+                            f" ! {marker}",    # with single space
+                            f"! {marker}",     # no space before !
+                            f"!{marker}",      # no space after !
+
+                            # Just marker with spacing (fallback - MUST be last)
+                            f"  {marker}",     # with double space
+                            f" {marker}",      # with single space
+                            marker             # just the marker
+                        ]
+
+                        # Use more precise pattern matching to avoid substring issues
+                        pattern_matched = False
+                        original_line = clean_line
+                        for pattern in patterns:
+                            # For XML patterns, we need exact matching to avoid substring issues
+                            if pattern.startswith('<!--') and pattern.endswith('-->'):
+                                if pattern in clean_line:
+                                    clean_line = clean_line.replace(pattern, "", 1)
+                                    pattern_matched = True
+                                    break
+                            elif pattern in clean_line:
+                                clean_line = clean_line.replace(pattern, "", 1)
+                                pattern_matched = True
+                                break
+
 
                 # Clean up any remaining whitespace where markers were removed
                 clean_line = clean_line.rstrip()

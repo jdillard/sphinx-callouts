@@ -42,6 +42,31 @@ Example
 
         <3> Start a Tune run that maximizes mean accuracy and stops after 5 iterations.
 
+Multi-Language Comment Support
+------------------------------
+
+.. callout::
+
+    .. literalinclude:: multi_language_example.py
+        :language: python
+        :start-after: __multi_lang_begin__
+        :end-before: __multi_lang_end__
+
+    .. annotations::
+        <1> Python hash comment style.
+
+        <2> C-style double-slash comment.
+
+        <3> Clojure double-semicolon comment.
+
+        <4> Erlang percent comment.
+
+        <5> SQL double-dash comment.
+
+        <6> Fortran exclamation comment.
+
+        <7> XML/HTML comment style.
+
 .. toctree::
    :maxdepth: 2
 
