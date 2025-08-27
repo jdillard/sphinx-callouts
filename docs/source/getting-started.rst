@@ -54,12 +54,29 @@ Using literalinclude
 
 For larger code examples, you can use ``literalinclude`` to include external files:
 
-Example 1: Basic Machine Learning Tutorial
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. code-block:: rst
+
+    .. callout::
+
+        .. literalinclude:: examples.py
+            :language: python
+            :start-after: __quick_start_begin__
+            :end-before: __quick_start_end__
+
+        .. annotations::
+            :1: Wrap a PyTorch model in an objective function that defines what we want to optimize.
+            :2: Define a search space with different hyperparameter values to try. We use grid search for 'a' and choice for 'b'.
+            :3: Start a Tune run that finds the configuration with the minimum score after testing all combinations.
+
+Where ``examples.py`` is:
+
+.. literalinclude:: examples.py
+
+Which renders as:
 
 .. callout::
 
-    .. literalinclude:: example.py
+    .. literalinclude:: examples.py
         :language: python
         :start-after: __quick_start_begin__
         :end-before: __quick_start_end__
@@ -76,7 +93,7 @@ Sphinx Callouts supports various comment styles for different programming langua
 
 .. callout::
 
-    .. literalinclude:: multi_language_example.py
+    .. literalinclude:: examples.py
         :start-after: __multi_lang_begin__
         :end-before: __multi_lang_end__
 
