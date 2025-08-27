@@ -101,7 +101,7 @@ The extension automatically recognizes these comment patterns:
    * - Language
      - Comment Style
      - Example
-   * - Python, Ruby, Bash
+   * - Python, Ruby, Bash, YAML
      - Hash
      - ``# <1>``
    * - JavaScript, C++, Java
@@ -122,62 +122,6 @@ The extension automatically recognizes these comment patterns:
    * - XML, HTML
      - Comment block
      - ``<!--<1>-->``
-
-Advanced Examples
------------------
-
-Example 2: Configuration File
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. callout::
-
-    .. code-block:: yaml
-
-        # Database configuration
-        database:  # <1>
-          host: localhost  # <2>
-          port: 5432  # <3>
-          name: myapp  # <4>
-
-        # Redis configuration
-        redis:  # <5>
-          host: localhost
-          port: 6379
-
-    .. annotations::
-        :1: Database section contains all database-related settings.
-        :2: The hostname where the database server is running.
-        :3: Port number for database connections (PostgreSQL default).
-        :4: Name of the database to connect to.
-        :5: Redis section for caching configuration.
-
-Example 3: Docker Configuration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. callout::
-
-    .. code-block:: dockerfile
-
-        FROM python:3.9-slim  # <1>
-
-        WORKDIR /app  # <2>
-
-        COPY requirements.txt .  # <3>
-        RUN pip install -r requirements.txt  # <4>
-
-        COPY . .  # <5>
-
-        EXPOSE 8000  # <6>
-        CMD ["python", "app.py"]  # <7>
-
-    .. annotations::
-        :1: Use Python 3.9 slim image as the base image.
-        :2: Set the working directory inside the container.
-        :3: Copy the requirements file to leverage Docker layer caching.
-        :4: Install Python dependencies.
-        :5: Copy the rest of the application code.
-        :6: Expose port 8000 for the web application.
-        :7: Define the command to run when the container starts.
 
 Common Pitfalls
 ---------------
