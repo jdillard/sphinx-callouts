@@ -27,6 +27,15 @@ class LiteralIncludeVisitor(nodes.NodeVisitor):
     def __init__(self, document: nodes.document) -> None:
         super().__init__(document)
 
+    def _is_inside_callout(self, node: nodes.literal_block) -> bool:
+        """Check if the literal block is inside a callout directive."""
+        parent = node.parent
+        while parent is not None:
+            if isinstance(parent, callout):
+                return True
+            parent = parent.parent
+        return False
+
     def unknown_visit(self, node: Node) -> None:
         pass
 
@@ -46,8 +55,22 @@ class LiteralIncludeVisitor(nodes.NodeVisitor):
         pass
 
     def visit_literal_block(self, node: nodes.literal_block) -> None:
-        if "<1>" in node.rawsource:
-            source = str(node.rawsource)
+        # Only process literal blocks that are inside a callout node
+        if self._is_inside_callout(node):
+            # Get source content - try rawsource first, then text content
+            source = ""
+            if hasattr(node, 'rawsource') and node.rawsource:
+                source = str(node.rawsource)
+            elif len(node.children) > 0 and hasattr(node.children[0], 'rawsource'):
+                source = str(node.children[0].rawsource)
+            elif len(node.children) > 0:
+                source = str(node.children[0])
+            else:
+                source = str(node.astext())
+
+            # Only process if we found callout markers
+            if "<1>" not in source:
+                return
             callouts = []
             lines = source.split('\n')
             clean_lines = []
@@ -140,14 +163,13 @@ class callout(nodes.General, nodes.Element):
 
 
 def visit_callout_node(self, node):
-    """We pass on node visit to prevent the
-    callout being treated as admonition."""
-    pass
+    """Add callout CSS class to the wrapper div."""
+    self.body.append('<div class="callout">')
 
 
 def depart_callout_node(self, node):
-    """Departing a callout node is a no-op, too."""
-    pass
+    """Close the callout wrapper div."""
+    self.body.append('</div>')
 
 
 def visit_callout_literal_block_html(self, node):
@@ -158,47 +180,64 @@ def visit_callout_literal_block_html(self, node):
     # Start the wrapper div
     self.body.append('<div class="callout-code-wrapper">')
 
-    # Render the code block with inline callouts
-    attrs = node.non_default_attributes()
-    classes = ['highlight']
-    if node.get('language'):
-        classes.append(f'highlight-{node.get("language")}')
-    attrs['class'] = ' '.join(classes)
+    # Use Pygments to highlight the code
+    try:
+        from pygments import highlight
+        from pygments.lexers import get_lexer_by_name
+        from pygments.formatters import HtmlFormatter
 
-    # Build the div tag
-    tag_attrs = ''.join(f' {k}="{v}"' for k, v in attrs.items())
-    self.body.append(f'<div{tag_attrs}>')
-    self.body.append('<div class="highlight">')
-    self.body.append('<pre>')
+        language = node.get('language', 'text')
+        code = node.rawsource
 
-    # Process content line by line to insert inline callouts
-    content = str(node.rawsource) if hasattr(node, 'rawsource') else str(node)
-    lines = content.split('\n')
+        # Get lexer for the language
+        try:
+            lexer = get_lexer_by_name(language)
+        except:
+            lexer = get_lexer_by_name('text')
 
-    for line_num, line in enumerate(lines):
-        # Escape HTML special characters
-        escaped_line = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+        # Create formatter (no prefix to match Sphinx's default classes)
+        formatter = HtmlFormatter(nowrap=True)
 
-        # Add the line content
-        self.body.append(escaped_line)
+        # Highlight the code
+        highlighted = highlight(code, lexer, formatter)
 
-        # Add inline callout if this line has one
-        if line_num in callouts_by_line:
-            callout = callouts_by_line[line_num]
-            self.body.append(f'<span class="callout-inline-marker"> {callout["symbol"]}</span>')
+        # Split into lines and add callout markers
+        lines = highlighted.split('\n')
+        for line_num, callout in callouts_by_line.items():
+            if line_num < len(lines):
+                lines[line_num] += f'<span class="callout-inline-marker"> {callout["symbol"]}</span>'
 
-        # Add newline except for the last line
-        if line_num < len(lines) - 1:
-            self.body.append('\n')
+        # Wrap in proper HTML structure
+        attrs = node.non_default_attributes()
+        classes = ['highlight']
+        if language:
+            classes.append(f'highlight-{language}')
+
+        self.body.append(f'<div class="{" ".join(classes)}">')
+        self.body.append('<div class="highlight">')
+        self.body.append('<pre>')
+        self.body.append('\n'.join(lines))
+        self.body.append('</pre>')
+        self.body.append('</div>')
+        self.body.append('</div>')
+
+    except ImportError:
+        # Fallback if Pygments is not available
+        self.body.append('<pre class="literal-block">')
+        lines = node.rawsource.split('\n')
+        for line_num, line in enumerate(lines):
+            escaped_line = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            if line_num in callouts_by_line:
+                callout = callouts_by_line[line_num]
+                escaped_line += f'<span class="callout-inline-marker"> {callout["symbol"]}</span>'
+            self.body.append(escaped_line)
+            if line_num < len(lines) - 1:
+                self.body.append('\n')
+        self.body.append('</pre>')
 
 
 def depart_callout_literal_block_html(self, node):
     """Custom HTML rendering for literal blocks with callouts."""
-    # Close the pre and highlight divs
-    self.body.append('</pre>')
-    self.body.append('</div>')
-    self.body.append('</div>')
-
     # Close the wrapper div
     self.body.append('</div>')
 
@@ -209,18 +248,41 @@ class annotations(nodes.Element):
     pass
 
 
-def _replace_numbers(content: str):
+def visit_annotations_node(self, node):
+    """Add annotations CSS class to the wrapper div."""
+    self.body.append('<div class="annotations">')
+
+
+def depart_annotations_node(self, node):
+    """Close the annotations wrapper div."""
+    self.body.append('</div>')
+
+
+def _replace_numbers(content):
     """
     Replaces strings of the form <x> with circled unicode numbers (e.g. ①) as text.
 
     Args:
-        content: Python str from a callout or annotations directive.
+        content: List of strings or string from a callout or annotations directive.
 
-    Returns: The formatted content string.
+    Returns: The formatted content.
     """
-    for i in range(1, 20):
-        content.replace(f"<{i}>", chr(int(f"0x{BASE_NUM + i}", base=16)))
-    return content
+    if isinstance(content, list):
+        result = []
+        for line in content:
+            if line is not None:
+                for i in range(1, 20):
+                    line = line.replace(f"<{i}>", chr(int(f"0x{BASE_NUM + i}", base=16)))
+                result.append(line)
+            else:
+                result.append(line)
+        return result
+    elif isinstance(content, str):
+        for i in range(1, 20):
+            content = content.replace(f"<{i}>", chr(int(f"0x{BASE_NUM + i}", base=16)))
+        return content
+    else:
+        return content
 
 
 def _parse_recursively(self, node):
@@ -284,7 +346,6 @@ class CalloutDirective(SphinxDirective):
         self.assert_has_content()
 
         content = self.content
-        content = _replace_numbers(content)
 
         callout_node = callout("\n".join(content))
         _parse_recursively(self, callout_node)
@@ -302,7 +363,7 @@ class AnnotationsDirective(SphinxDirective):
         content = _replace_numbers(content)
 
         joined_content = "\n".join(content)
-        annotations_node = callout(joined_content)
+        annotations_node = annotations(joined_content)
         _parse_recursively(self, annotations_node)
 
         return [annotations_node]
@@ -328,7 +389,12 @@ def setup(app):
         latex=(visit_callout_node, depart_callout_node),
         text=(visit_callout_node, depart_callout_node),
     )
-    app.add_node(annotations)
+    app.add_node(
+        annotations,
+        html=(visit_annotations_node, depart_annotations_node),
+        latex=(visit_callout_node, depart_callout_node),
+        text=(visit_callout_node, depart_callout_node),
+    )
 
     # Add new directives
     app.add_directive("callout", CalloutDirective)
