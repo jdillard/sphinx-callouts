@@ -1,5 +1,8 @@
 import re
 from docutils import nodes
+import shutil
+import os
+from pathlib import Path
 
 from sphinx.util.docutils import SphinxDirective
 from sphinx.transforms import SphinxTransform
@@ -369,13 +372,14 @@ class AnnotationsDirective(SphinxDirective):
         return [annotations_node]
 
 
+def copy_custom_files(app, exc):
+    if not exc:
+        # Add static files
+        static_dir = os.path.join(app.builder.outdir, '_static')
+        custom_file = str(Path(__file__).parent.joinpath("static", "css", "callouts.css").absolute())
+        shutil.copy2(custom_file, static_dir)
+
 def setup(app):
-    import os.path
-
-    # Add static files path
-    static_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '_static'))
-    app.config.html_static_path.append(static_path)
-
     # Add new node types
     app.add_node(
         callout,
@@ -404,7 +408,9 @@ def setup(app):
     app.add_post_transform(CalloutIncludePostTransform)
 
     # Add CSS for callouts
-    app.add_css_file('css/callouts.css')
+    app.add_css_file('callouts.css')
+
+    app.connect('build-finished', copy_custom_files)
 
     return {
         "version": __version__,
