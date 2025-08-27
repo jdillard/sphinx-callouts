@@ -77,7 +77,6 @@ Sphinx Callouts supports various comment styles for different programming langua
 .. callout::
 
     .. literalinclude:: multi_language_example.py
-        :language: python
         :start-after: __multi_lang_begin__
         :end-before: __multi_lang_end__
 
