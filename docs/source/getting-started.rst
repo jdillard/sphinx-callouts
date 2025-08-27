@@ -65,11 +65,9 @@ Example 1: Basic Machine Learning Tutorial
         :end-before: __quick_start_end__
 
     .. annotations::
-        <1> Wrap a PyTorch model in an objective function that defines what we want to optimize.
-        
-        <2> Define a search space with different hyperparameter values to try. We use grid search for 'a' and choice for 'b'.
-        
-        <3> Start a Tune run that finds the configuration with the minimum score after testing all combinations.
+        :1: Wrap a PyTorch model in an objective function that defines what we want to optimize.
+        :2: Define a search space with different hyperparameter values to try. We use grid search for 'a' and choice for 'b'.
+        :3: Start a Tune run that finds the configuration with the minimum score after testing all combinations.
 
 Multi-Language Support
 ----------------------
@@ -84,19 +82,13 @@ Sphinx Callouts supports various comment styles for different programming langua
         :end-before: __multi_lang_end__
 
     .. annotations::
-        <1> Python uses hash (#) comments for callout markers.
-        
-        <2> C-style languages use double-slash (//) comments.
-        
-        <3> Clojure uses double-semicolon (;;) comments.
-        
-        <4> Erlang uses percent (%) comments.
-        
-        <5> SQL uses double-dash (--) comments.
-        
-        <6> Fortran uses exclamation (!) comments.
-        
-        <7> XML/HTML uses comment blocks (<!-- -->) for callouts.
+        :1: Python uses hash (#) comments for callout markers.
+        :2: C-style languages use double-slash (//) comments.
+        :3: Clojure uses double-semicolon (;;) comments.
+        :4: Erlang uses percent (%) comments.
+        :5: SQL uses double-dash (--) comments.
+        :6: Fortran uses exclamation (!) comments.
+        :7: XML/HTML uses comment blocks (<!-- -->) for callouts.
 
 Supported Comment Styles
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -154,11 +146,11 @@ Example 2: Configuration File
           port: 6379
 
     .. annotations::
-        <1> Database section contains all database-related settings.
-        <2> The hostname where the database server is running.
-        <3> Port number for database connections (PostgreSQL default).
-        <4> Name of the database to connect to.
-        <5> Redis section for caching configuration.
+        :1: Database section contains all database-related settings.
+        :2: The hostname where the database server is running.
+        :3: Port number for database connections (PostgreSQL default).
+        :4: Name of the database to connect to.
+        :5: Redis section for caching configuration.
 
 Example 3: Docker Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -180,13 +172,13 @@ Example 3: Docker Configuration
         CMD ["python", "app.py"]  # <7>
 
     .. annotations::
-        <1> Use Python 3.9 slim image as the base image.
-        <2> Set the working directory inside the container.
-        <3> Copy the requirements file to leverage Docker layer caching.
-        <4> Install Python dependencies.
-        <5> Copy the rest of the application code.
-        <6> Expose port 8000 for the web application.
-        <7> Define the command to run when the container starts.
+        :1: Use Python 3.9 slim image as the base image.
+        :2: Set the working directory inside the container.
+        :3: Copy the requirements file to leverage Docker layer caching.
+        :4: Install Python dependencies.
+        :5: Copy the rest of the application code.
+        :6: Expose port 8000 for the web application.
+        :7: Define the command to run when the container starts.
 
 Common Pitfalls
 ---------------
