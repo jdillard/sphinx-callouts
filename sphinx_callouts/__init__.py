@@ -66,7 +66,7 @@ class LiteralIncludeVisitor(nodes.NodeVisitor):
                             'symbol': chr(int(f"0x{BASE_NUM + i}", base=16))
                         })
                         # Remove the comment and marker from the line
-                        # Support all AsciiDoc comment patterns with regex for whitespace-agnostic matching
+                        # Supports different comment patterns with regex for whitespace-agnostic matching
                         # Escape marker for regex (handles < > characters in markers like <7>)
                         escaped_marker = re.escape(marker)
                         escaped_number = re.escape(str(i))
@@ -75,7 +75,6 @@ class LiteralIncludeVisitor(nodes.NodeVisitor):
                             # XML/HTML/SGML style comments with flexible whitespace
                             rf'\s*<!--\s*{escaped_marker}\s*-->\s*',      # <!--<7>--> with optional spaces
                             rf'\s*<!--\s*{escaped_number}\s*-->\s*',      # <!--7--> with optional spaces
-
 
                             # Python/Ruby/Perl/Shell style comments
                             rf'\s*#\s*{escaped_marker}\s*',               # # <7> with flexible spacing
