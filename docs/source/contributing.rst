@@ -38,7 +38,7 @@ Current contributors
 Thanks to all who have contributed!
 The people that have improved the code:
 
-.. contributors:: jdillard/callouts
+.. contributors:: jdillard/sphinx-callouts
    :avatars:
    :limit: 100
    :exclude: pre-commit-ci[bot],dependabot[bot]
