@@ -1,3 +1,4 @@
+import re
 from docutils import nodes
 
 from sphinx.util.docutils import SphinxDirective
@@ -65,91 +66,44 @@ class LiteralIncludeVisitor(nodes.NodeVisitor):
                             'symbol': chr(int(f"0x{BASE_NUM + i}", base=16))
                         })
                         # Remove the comment and marker from the line
-                        # Support all AsciiDoc comment patterns with various spacing
-                        # Put XML patterns FIRST to prevent fallback substring matching issues
-                        patterns = [
-                            # XML/HTML/SGML style comments (using marker format)
-                            f"  <!-- {marker} -->", # XML style with spaces: <!-- <1> -->
-                            f" <!-- {marker} -->",  # XML style with space and spaces: <!-- <1> -->
-                            f"<!-- {marker} -->",   # XML style with spaces: <!-- <1> -->
-                            f"  <!--{marker}-->",   # XML style: <!--<1>-->
-                            f" <!--{marker}-->",    # XML style with space: <!--<1>-->
-                            f"<!--{marker}-->",     # XML style: <!--<1>-->
-                            f"  <!-- {marker}-->",  # XML style with leading space: <!-- <1>-->
-                            f" <!-- {marker}-->",   # XML style with space and leading space: <!-- <1>-->
-                            f"<!-- {marker}-->",    # XML style with leading space: <!-- <1>-->
-                            f"  <!--{marker} -->",  # XML style with trailing space: <!--<1> -->
-                            f" <!--{marker} -->",   # XML style with space and trailing space: <!--<1> -->
-                            f"<!--{marker} -->",    # XML style with trailing space: <!--<1> -->
+                        # Support all AsciiDoc comment patterns with regex for whitespace-agnostic matching
+                        # Escape marker for regex (handles < > characters in markers like <7>)
+                        escaped_marker = re.escape(marker)
+                        escaped_number = re.escape(str(i))
+                        # Define regex patterns (ordered by specificity - most specific first)
+                        regex_patterns = [
+                            # XML/HTML/SGML style comments with flexible whitespace
+                            rf'\s*<!--\s*{escaped_marker}\s*-->\s*',      # <!--<7>--> with optional spaces
+                            rf'\s*<!--\s*{escaped_number}\s*-->\s*',      # <!--7--> with optional spaces
 
-                            # XML/HTML/SGML style comments (using direct number format)
-                            f"  <!-- {i} -->",     # XML style with spaces: <!-- 7 -->
-                            f" <!-- {i} -->",      # XML style with space and spaces: <!-- 7 -->
-                            f"<!-- {i} -->",       # XML style with spaces: <!-- 7 -->
-                            f"  <!--{i}-->",       # XML style: <!--7-->
-                            f" <!--{i}-->",        # XML style with space: <!--7-->
-                            f"<!--{i}-->",         # XML style: <!--7-->
-                            f"  <!-- {i}-->",      # XML style with leading space: <!-- 7-->
-                            f" <!-- {i}-->",       # XML style with space and leading space: <!-- 7-->
-                            f"<!-- {i}-->",        # XML style with leading space: <!-- 7-->
-                            f"  <!--{i} -->",      # XML style with trailing space: <!--7 -->
-                            f" <!--{i} -->",       # XML style with space and trailing space: <!--7 -->
-                            f"<!--{i} -->",        # XML style with trailing space: <!--7 -->
 
                             # Python/Ruby/Perl/Shell style comments
-                            f"  # {marker}",   # with double space
-                            f" # {marker}",    # with single space
-                            f"# {marker}",     # no space before #
-                            f"#{marker}",      # no space after #
+                            rf'\s*#\s*{escaped_marker}\s*',               # # <7> with flexible spacing
 
                             # C-style comments (C++, Java, JavaScript, etc.)
-                            f"  // {marker}",  # with double space
-                            f" // {marker}",   # with single space
-                            f"// {marker}",    # no space before //
-                            f"//{marker}",     # no space after //
+                            rf'\s*//\s*{escaped_marker}\s*',              # // <7> with flexible spacing
 
                             # Clojure style comments
-                            f"  ;; {marker}",  # with double space
-                            f" ;; {marker}",   # with single space
-                            f";; {marker}",    # no space before ;;
-                            f";;{marker}",     # no space after ;;
+                            rf'\s*;;\s*{escaped_marker}\s*',              # ;; <7> with flexible spacing
 
                             # Erlang/PostScript style comments
-                            f"  % {marker}",   # with double space
-                            f" % {marker}",    # with single space
-                            f"% {marker}",     # no space before %
-                            f"%{marker}",      # no space after %
+                            rf'\s*%\s*{escaped_marker}\s*',               # % <7> with flexible spacing
 
                             # SQL style comments
-                            f"  -- {marker}",  # with double space
-                            f" -- {marker}",   # with single space
-                            f"-- {marker}",    # no space before --
-                            f"--{marker}",     # no space after --
+                            rf'\s*--\s*{escaped_marker}\s*',              # -- <7> with flexible spacing
 
                             # Fortran/MATLAB style comments
-                            f"  ! {marker}",   # with double space
-                            f" ! {marker}",    # with single space
-                            f"! {marker}",     # no space before !
-                            f"!{marker}",      # no space after !
+                            rf'\s*!\s*{escaped_marker}\s*',               # ! <7> with flexible spacing
 
-                            # Just marker with spacing (fallback - MUST be last)
-                            f"  {marker}",     # with double space
-                            f" {marker}",      # with single space
-                            marker             # just the marker
+                            # Fallback: just the marker with optional surrounding whitespace
+                            rf'\s*{escaped_marker}\s*'                    # <7> with optional spacing
                         ]
 
-                        # Use more precise pattern matching to avoid substring issues
+                        # Try each regex pattern until one matches
                         pattern_matched = False
-                        original_line = clean_line
-                        for pattern in patterns:
-                            # For XML patterns, we need exact matching to avoid substring issues
-                            if pattern.startswith('<!--') and pattern.endswith('-->'):
-                                if pattern in clean_line:
-                                    clean_line = clean_line.replace(pattern, "", 1)
-                                    pattern_matched = True
-                                    break
-                            elif pattern in clean_line:
-                                clean_line = clean_line.replace(pattern, "", 1)
+                        for regex_pattern in regex_patterns:
+                            if re.search(regex_pattern, clean_line):
+                                clean_line = re.sub(regex_pattern, '', clean_line, count=1)
                                 pattern_matched = True
                                 break
 
