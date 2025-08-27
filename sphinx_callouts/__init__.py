@@ -27,6 +27,15 @@ class LiteralIncludeVisitor(nodes.NodeVisitor):
     def __init__(self, document: nodes.document) -> None:
         super().__init__(document)
 
+    def _is_inside_callout(self, node: nodes.literal_block) -> bool:
+        """Check if the literal block is inside a callout directive."""
+        parent = node.parent
+        while parent is not None:
+            if isinstance(parent, callout):
+                return True
+            parent = parent.parent
+        return False
+
     def unknown_visit(self, node: Node) -> None:
         pass
 
@@ -46,7 +55,8 @@ class LiteralIncludeVisitor(nodes.NodeVisitor):
         pass
 
     def visit_literal_block(self, node: nodes.literal_block) -> None:
-        if "<1>" in node.rawsource:
+        # Only process literal blocks that are inside a callout node
+        if "<1>" in node.rawsource and self._is_inside_callout(node):
             source = str(node.rawsource)
             callouts = []
             lines = source.split('\n')
@@ -214,7 +224,7 @@ def visit_annotations_node(self, node):
 
 
 def depart_annotations_node(self, node):
-    """Close the annotations wrapper div.""" 
+    """Close the annotations wrapper div."""
     self.body.append('</div>')
 
 
