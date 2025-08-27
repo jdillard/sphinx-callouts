@@ -139,8 +139,8 @@ Example 2: Configuration File
           host: localhost  # <2>
           port: 5432  # <3>
           name: myapp  # <4>
-          
-        # Redis configuration  
+
+        # Redis configuration
         redis:  # <5>
           host: localhost
           port: 6379
@@ -160,14 +160,14 @@ Example 3: Docker Configuration
     .. code-block:: dockerfile
 
         FROM python:3.9-slim  # <1>
-        
+
         WORKDIR /app  # <2>
-        
+
         COPY requirements.txt .  # <3>
         RUN pip install -r requirements.txt  # <4>
-        
+
         COPY . .  # <5>
-        
+
         EXPOSE 8000  # <6>
         CMD ["python", "app.py"]  # <7>
 
