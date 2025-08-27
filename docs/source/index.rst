@@ -25,51 +25,12 @@ Add the extension to your Sphinx configuration (``conf.py``):
         'sphinx_callouts',
     ]
 
-Example
--------
-
-.. callout::
-
-    .. literalinclude:: example.py
-        :language: python
-        :start-after: __quick_start_begin_
-        :end-before: __quick_start_end__
-
-    .. annotations::
-        <1> Wrap a PyTorch model in an objective function.
-
-        <2> Define a search space and initialize the search algorithm.
-
-        <3> Start a Tune run that maximizes mean accuracy and stops after 5 iterations.
-
-Multi-Language Comment Support
-------------------------------
-
-.. callout::
-
-    .. literalinclude:: multi_language_example.py
-        :language: python
-        :start-after: __multi_lang_begin__
-        :end-before: __multi_lang_end__
-
-    .. annotations::
-        <1> Python hash comment style.
-
-        <2> C-style double-slash comment.
-
-        <3> Clojure double-semicolon comment.
-
-        <4> Erlang percent comment.
-
-        <5> SQL double-dash comment.
-
-        <6> Fortran exclamation comment.
-
-        <7> XML/HTML comment style.
+For comprehensive examples and detailed usage instructions, see the :doc:`getting-started` guide.
 
 .. toctree::
    :maxdepth: 2
 
+   getting-started
    contributing
    changelog
 
