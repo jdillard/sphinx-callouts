@@ -180,47 +180,64 @@ def visit_callout_literal_block_html(self, node):
     # Start the wrapper div
     self.body.append('<div class="callout-code-wrapper">')
 
-    # Render the code block with inline callouts
-    attrs = node.non_default_attributes()
-    classes = ['highlight']
-    if node.get('language'):
-        classes.append(f'highlight-{node.get("language")}')
-    attrs['class'] = ' '.join(classes)
+    # Use Pygments to highlight the code
+    try:
+        from pygments import highlight
+        from pygments.lexers import get_lexer_by_name
+        from pygments.formatters import HtmlFormatter
 
-    # Build the div tag
-    tag_attrs = ''.join(f' {k}="{v}"' for k, v in attrs.items())
-    self.body.append(f'<div{tag_attrs}>')
-    self.body.append('<div class="highlight">')
-    self.body.append('<pre>')
+        language = node.get('language', 'text')
+        code = node.rawsource
 
-    # Process content line by line to insert inline callouts
-    content = str(node.rawsource) if hasattr(node, 'rawsource') else str(node)
-    lines = content.split('\n')
+        # Get lexer for the language
+        try:
+            lexer = get_lexer_by_name(language)
+        except:
+            lexer = get_lexer_by_name('text')
 
-    for line_num, line in enumerate(lines):
-        # Escape HTML special characters
-        escaped_line = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+        # Create formatter (no prefix to match Sphinx's default classes)
+        formatter = HtmlFormatter(nowrap=True)
 
-        # Add the line content
-        self.body.append(escaped_line)
+        # Highlight the code
+        highlighted = highlight(code, lexer, formatter)
 
-        # Add inline callout if this line has one
-        if line_num in callouts_by_line:
-            callout = callouts_by_line[line_num]
-            self.body.append(f'<span class="callout-inline-marker"> {callout["symbol"]}</span>')
+        # Split into lines and add callout markers
+        lines = highlighted.split('\n')
+        for line_num, callout in callouts_by_line.items():
+            if line_num < len(lines):
+                lines[line_num] += f'<span class="callout-inline-marker"> {callout["symbol"]}</span>'
 
-        # Add newline except for the last line
-        if line_num < len(lines) - 1:
-            self.body.append('\n')
+        # Wrap in proper HTML structure
+        attrs = node.non_default_attributes()
+        classes = ['highlight']
+        if language:
+            classes.append(f'highlight-{language}')
+
+        self.body.append(f'<div class="{" ".join(classes)}">')
+        self.body.append('<div class="highlight">')
+        self.body.append('<pre>')
+        self.body.append('\n'.join(lines))
+        self.body.append('</pre>')
+        self.body.append('</div>')
+        self.body.append('</div>')
+
+    except ImportError:
+        # Fallback if Pygments is not available
+        self.body.append('<pre class="literal-block">')
+        lines = node.rawsource.split('\n')
+        for line_num, line in enumerate(lines):
+            escaped_line = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            if line_num in callouts_by_line:
+                callout = callouts_by_line[line_num]
+                escaped_line += f'<span class="callout-inline-marker"> {callout["symbol"]}</span>'
+            self.body.append(escaped_line)
+            if line_num < len(lines) - 1:
+                self.body.append('\n')
+        self.body.append('</pre>')
 
 
 def depart_callout_literal_block_html(self, node):
     """Custom HTML rendering for literal blocks with callouts."""
-    # Close the pre and highlight divs
-    self.body.append('</pre>')
-    self.body.append('</div>')
-    self.body.append('</div>')
-
     # Close the wrapper div
     self.body.append('</div>')
 
