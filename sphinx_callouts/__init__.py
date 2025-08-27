@@ -140,14 +140,13 @@ class callout(nodes.General, nodes.Element):
 
 
 def visit_callout_node(self, node):
-    """We pass on node visit to prevent the
-    callout being treated as admonition."""
-    pass
+    """Add callout CSS class to the wrapper div."""
+    self.body.append('<div class="callout">')
 
 
 def depart_callout_node(self, node):
-    """Departing a callout node is a no-op, too."""
-    pass
+    """Close the callout wrapper div."""
+    self.body.append('</div>')
 
 
 def visit_callout_literal_block_html(self, node):
@@ -207,6 +206,16 @@ class annotations(nodes.Element):
     """Sphinx annotations node."""
 
     pass
+
+
+def visit_annotations_node(self, node):
+    """Add annotations CSS class to the wrapper div."""
+    self.body.append('<div class="annotations">')
+
+
+def depart_annotations_node(self, node):
+    """Close the annotations wrapper div.""" 
+    self.body.append('</div>')
 
 
 def _replace_numbers(content: str):
@@ -302,7 +311,7 @@ class AnnotationsDirective(SphinxDirective):
         content = _replace_numbers(content)
 
         joined_content = "\n".join(content)
-        annotations_node = callout(joined_content)
+        annotations_node = annotations(joined_content)
         _parse_recursively(self, annotations_node)
 
         return [annotations_node]
@@ -328,7 +337,12 @@ def setup(app):
         latex=(visit_callout_node, depart_callout_node),
         text=(visit_callout_node, depart_callout_node),
     )
-    app.add_node(annotations)
+    app.add_node(
+        annotations,
+        html=(visit_annotations_node, depart_annotations_node),
+        latex=(visit_callout_node, depart_callout_node),
+        text=(visit_callout_node, depart_callout_node),
+    )
 
     # Add new directives
     app.add_directive("callout", CalloutDirective)

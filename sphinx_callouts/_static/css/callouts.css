@@ -35,6 +35,30 @@
     }
 }
 
+/* Style field lists inside callout annotations to be inline */
+.callout .annotations dl.field-list dt {
+    float: left;
+    clear: left;
+    width: auto;
+    margin-right: 0.5em;
+    font-weight: bold;
+}
+
+.callout .annotations dl.field-list dd {
+    margin-left: 0;
+    padding-left: 0;
+}
+
+.callout .annotations dl.field-list dd::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.callout .annotations dd p {
+    margin: 0;
+}
+
 /* Furo theme specific adjustments */
 body[data-theme="dark"] .callout-marker {
     color: var(--color-code-foreground, #f8f8f2);
