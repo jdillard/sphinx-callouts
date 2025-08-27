@@ -56,8 +56,21 @@ class LiteralIncludeVisitor(nodes.NodeVisitor):
 
     def visit_literal_block(self, node: nodes.literal_block) -> None:
         # Only process literal blocks that are inside a callout node
-        if "<1>" in node.rawsource and self._is_inside_callout(node):
-            source = str(node.rawsource)
+        if self._is_inside_callout(node):
+            # Get source content - try rawsource first, then text content
+            source = ""
+            if hasattr(node, 'rawsource') and node.rawsource:
+                source = str(node.rawsource)
+            elif len(node.children) > 0 and hasattr(node.children[0], 'rawsource'):
+                source = str(node.children[0].rawsource)
+            elif len(node.children) > 0:
+                source = str(node.children[0])
+            else:
+                source = str(node.astext())
+
+            # Only process if we found callout markers
+            if "<1>" not in source:
+                return
             callouts = []
             lines = source.split('\n')
             clean_lines = []
@@ -228,18 +241,31 @@ def depart_annotations_node(self, node):
     self.body.append('</div>')
 
 
-def _replace_numbers(content: str):
+def _replace_numbers(content):
     """
     Replaces strings of the form <x> with circled unicode numbers (e.g. ①) as text.
 
     Args:
-        content: Python str from a callout or annotations directive.
+        content: List of strings or string from a callout or annotations directive.
 
-    Returns: The formatted content string.
+    Returns: The formatted content.
     """
-    for i in range(1, 20):
-        content.replace(f"<{i}>", chr(int(f"0x{BASE_NUM + i}", base=16)))
-    return content
+    if isinstance(content, list):
+        result = []
+        for line in content:
+            if line is not None:
+                for i in range(1, 20):
+                    line = line.replace(f"<{i}>", chr(int(f"0x{BASE_NUM + i}", base=16)))
+                result.append(line)
+            else:
+                result.append(line)
+        return result
+    elif isinstance(content, str):
+        for i in range(1, 20):
+            content = content.replace(f"<{i}>", chr(int(f"0x{BASE_NUM + i}", base=16)))
+        return content
+    else:
+        return content
 
 
 def _parse_recursively(self, node):
@@ -303,7 +329,6 @@ class CalloutDirective(SphinxDirective):
         self.assert_has_content()
 
         content = self.content
-        content = _replace_numbers(content)
 
         callout_node = callout("\n".join(content))
         _parse_recursively(self, callout_node)
