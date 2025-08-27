@@ -8,7 +8,7 @@ from sphinx.util.docutils import SphinxDirective
 from sphinx.transforms import SphinxTransform
 from docutils.nodes import Node
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 # BASE_NUM = 2775  # black circles, white numbers
 BASE_NUM = 2459  # white circle, black numbers
