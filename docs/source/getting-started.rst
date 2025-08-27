@@ -30,9 +30,9 @@ The basic syntax uses the ``callout`` directive to wrap your code block, followe
                 return message  # <3>
 
         .. annotations::
-            <1> Define a function that takes a name parameter.
-            <2> Create a formatted greeting message.
-            <3> Return the message to the caller.
+            :1: Define a function that takes a name parameter.
+            :2: Create a formatted greeting message.
+            :3: Return the message to the caller.
 
 This renders as:
 
