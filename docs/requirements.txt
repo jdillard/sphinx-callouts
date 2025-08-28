@@ -4,3 +4,4 @@ sphinx-contributors
 sphinx
 sphinx-callouts
 sphinxext-opengraph
+sphinx-copybutton
