@@ -1,14 +1,35 @@
 /* CSS for sphinx-callouts extension */
 
+/* CSS Custom Properties for theme-agnostic design */
+:root {
+    /* Color variables */
+    --callout-marker-color: var(--color-code-foreground, #333);
+    --callout-marker-color-dark: var(--color-code-foreground, #f8f8f2);
+    --callout-background: var(--color-background-primary, transparent);
+    --callout-annotation-bg: var(--color-background-secondary, #f8f9fa);
+    --callout-annotation-border: var(--color-border-primary, #dee2e6);
+
+    /* Typography variables */
+    --callout-font-family: var(--font-stack-monospace, "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", monospace);
+    --callout-font-size: inherit;
+    --callout-line-height: 1.4em;
+
+    /* Spacing variables */
+    --callout-marker-spacing: 0.5em;
+    --callout-annotation-padding: 0.75rem;
+    --callout-annotation-margin: 0.5rem 0;
+}
+
 .callout-code-wrapper {
     position: relative;
+    background: var(--callout-background);
 }
 
 .callout-inline-marker {
-    font-family: inherit;
-    font-size: inherit;
-    line-height: inherit;
-    color: var(--color-code-foreground, #333);
+    font-family: var(--callout-font-family);
+    font-size: var(--callout-font-size);
+    line-height: var(--callout-line-height);
+    color: var(--callout-marker-color);
     pointer-events: none;
     /* Prevent selection to avoid interference with code copying */
     user-select: none;
@@ -20,7 +41,7 @@
 
 /* Set line height CSS custom property based on the highlight theme */
 .highlight {
-    --code-line-height: 1.4em;
+    --code-line-height: var(--callout-line-height);
 }
 
 /* Ensure the wrapper maintains the proper height */
@@ -28,10 +49,16 @@
     position: relative;
 }
 
-/* Dark mode support */
+/* Theme-aware dark mode support */
 @media (prefers-color-scheme: dark) {
+    :root {
+        --callout-marker-color: var(--callout-marker-color-dark);
+        --callout-annotation-bg: var(--color-background-secondary, #2d3748);
+        --callout-annotation-border: var(--color-border-primary, #4a5568);
+    }
+
     .callout-marker {
-        color: var(--color-code-foreground, #f8f8f2);
+        color: var(--callout-marker-color);
     }
 }
 
@@ -40,7 +67,7 @@
     float: left;
     clear: left;
     width: auto;
-    margin-right: 0.5em;
+    margin-right: var(--callout-marker-spacing);
     font-weight: bold;
 }
 
@@ -56,10 +83,10 @@
 }
 
 .callout .annotations dd p {
-    margin: 0;
+    margin: var(--callout-annotation-margin);
 }
 
-/* Furo theme specific adjustments */
+/* Theme-specific adjustments using CSS custom properties */
 body[data-theme="dark"] .callout-marker {
-    color: var(--color-code-foreground, #f8f8f2);
+    color: var(--callout-marker-color);
 }
